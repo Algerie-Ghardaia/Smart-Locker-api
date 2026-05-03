@@ -8,7 +8,7 @@ WORKDIR /app
 # Copier les fichiers de dépendances
 COPY package.json yarn.lock ./
 
-# Installer les dépendances
+# Installer toutes les dépendances (y compris devDependencies pour le build)
 RUN yarn install --frozen-lockfile
 
 # Copier le reste du code source
@@ -24,7 +24,7 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copier uniquement ce qui est nécessaire
+# Copier uniquement ce qui est nécessaire en production
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/yarn.lock ./
 COPY --from=builder /app/dist ./dist
@@ -32,5 +32,5 @@ COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
 
-# Lancer NestJS en production (pas Next.js !)
-CMD ["node", "dist/main"]
+# Lancer NestJS en production
+CMD ["node", "--max-old-space-size=400", "dist/main"]
